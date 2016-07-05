@@ -1,0 +1,30 @@
+{
+    "author": "hs.solvang@gmail.com",
+    "dependencies": {},
+    "keywords": [],
+    "name": "hapticgymtimer",
+    "pebble": {
+        "capabilities": [
+            ""
+        ],
+        "displayName": "HapticGymTimer",
+        "enableMultiJS": true,
+        "messageKeys": [],
+        "projectType": "native",
+        "resources": {
+            "media": []
+        },
+        "sdkVersion": "3",
+        "targetPlatforms": [
+            "aplite",
+            "basalt",
+            "chalk",
+            "diorite"
+        ],
+        "uuid": "2d9c10f6-922a-4f3b-93db-737eae0c8883",
+        "watchapp": {
+            "watchface": false
+        }
+    },
+    "version": "1.0.0"
+}
