@@ -8,7 +8,7 @@
 #define BGCOLOR GColorOrange
 #define FONT FONT_KEY_LECO_36_BOLD_NUMBERS
 #define TIMER_INTERVAL 30
-#define CIRCLE_SIZE 60
+#define CIRCLE_SIZE 120
 
 static Window *window;
 static TextLayer *text_layer;
@@ -31,7 +31,7 @@ static void display_timer_time(void) {
 static void countdown_callback(void) {
   if (gym_timer_seconds) {
     gym_timer_seconds--;
-    display_timer_time();
+    //display_timer_time();
     AppTimer_countdown = app_timer_register(1000, (AppTimerCallback) countdown_callback, NULL);
   } else {
     vibes_short_pulse();
@@ -66,9 +66,10 @@ static void select_long_click_release_handler(ClickRecognizerRef recognizer, voi
 
 static void up_repeating_click_handler(ClickRecognizerRef recognizer, void *context) {
   gym_timer_seconds += TIMER_INTERVAL;
-  if (!timer_running) stored_gym_timer += TIMER_INTERVAL;
-  display_timer_time();
-    
+  if (!timer_running) {
+    stored_gym_timer += TIMER_INTERVAL;
+    display_timer_time();
+  } 
 }
 
 static void down_repeating_click_handler(ClickRecognizerRef recognizer, void *context) {
@@ -77,8 +78,8 @@ static void down_repeating_click_handler(ClickRecognizerRef recognizer, void *co
   if (!timer_running) {
     if(stored_gym_timer - TIMER_INTERVAL > 0) stored_gym_timer -= TIMER_INTERVAL;
     else stored_gym_timer = 0;
+    display_timer_time();
   }
-  display_timer_time();
 }
 
 static void click_config_provider(void *context) {
@@ -94,11 +95,7 @@ static void image_update_proc(Layer *layer, GContext *ctx) {
   // Place image in the center of the Window
   //GSize img_size = gdraw_command_image_get_bounds_size(s_command_image);
   GRect bounds = layer_get_bounds(layer);
-  GRect cake_bounds = GRect(bounds.size.w/2-30, 30, CIRCLE_SIZE, CIRCLE_SIZE);  
-  //const GEdgeInsets frame_insets = {
-  //  .top = (bounds.size.h - 20/*img_size.h*/) / 2,
-  //  .left = (bounds.size.w - 20/*img_size.w*/) / 2
-  //};
+  GRect cake_bounds = GRect(bounds.size.w/2-CIRCLE_SIZE/2, CIRCLE_SIZE, CIRCLE_SIZE, CIRCLE_SIZE);  
   // Set the line color
   graphics_context_set_stroke_color(ctx, GColorBlack);
   // Set the stroke width (must be an odd integer value)
@@ -106,23 +103,12 @@ static void image_update_proc(Layer *layer, GContext *ctx) {
   // Set the fill color
   graphics_context_set_fill_color(ctx, GColorWhite);
   
-  GPoint center = GPoint(bounds.size.w/2, 50);
-  uint16_t radius = 40;
-  // Draw the outline of a circle
-  //graphics_draw_circle(ctx, center, radius);
-  // Fill a circle
-  //graphics_fill_circle(ctx, center, radius);
   uint16_t inset_thickness = CIRCLE_SIZE/2;
   int32_t angle_start = DEG_TO_TRIGANGLE(360-360*gym_timer_seconds/stored_gym_timer);
   int32_t angle_end = DEG_TO_TRIGANGLE(360);
   APP_LOG(APP_LOG_LEVEL_DEBUG, "Angle end: %d", (int)angle_end);
   // Fill a radial section of a circle
   graphics_fill_radial(ctx, cake_bounds, GOvalScaleModeFitCircle, inset_thickness, angle_start, angle_end);
-  // If the image was loaded successfully...
-  //if (s_command_image) {
-    // Draw it
-  //  gdraw_command_image_draw(ctx, s_command_image, grect_inset(bounds, frame_insets).origin);
-  //}
 }
 
 static void window_load(Window *window) {
@@ -130,7 +116,7 @@ static void window_load(Window *window) {
   GRect bounds = layer_get_bounds(window_layer);
   
   //Clock
-  text_layer = text_layer_create(GRect(0, bounds.size.h/2-46/2+45, bounds.size.w, 46));
+  text_layer = text_layer_create(GRect(0, bounds.size.h/2-46/2/*+45*/, bounds.size.w, 46));
   text_layer_set_background_color(text_layer, PBL_IF_COLOR_ELSE(BGCOLOR, GColorBlack));
   text_layer_set_text_color(text_layer, PBL_IF_COLOR_ELSE(GColorWhite, GColorWhite));
   text_layer_set_font(text_layer, fonts_get_system_font(FONT_KEY_LECO_36_BOLD_NUMBERS));
