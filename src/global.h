@@ -5,6 +5,7 @@
 uint16_t gym_timer_seconds;
 uint8_t mode;
 #else
+#define NUMBER_OF_MODES 1
 #define MEM_STORED_GYM_TIMER 0x00000000
 #define MEM_GYM_TIMER 0x00000001
 
