@@ -9,7 +9,7 @@ void uint16_to_time(uint16_t seconds, char* timer_str) {
 }
 
 //Not static, global.
-void select_multi_cick_handler(ClickRecognizerRef recognizer, void *context) {
+void select_multi_click_handler(ClickRecognizerRef recognizer, void *context) {
   if(mode < NUMBER_OF_MODES) mode++;
   else mode = 0;
   //Switch window. Push the new and remove the old.
@@ -30,7 +30,8 @@ void select_multi_cick_handler(ClickRecognizerRef recognizer, void *context) {
     }while (top_window != NULL);
     gym_timer_init();
   }
-  
+}
+
 static void init(void) {
   gym_timer_init();
 }
@@ -42,10 +43,10 @@ static void deinit(void) {
     gym_timer_init();
     window_destroy(top_window);
     break;
-  case 1: 
-    interval_init();
-    window_destroy(top_window);
-    break;
+  //case 1: 
+  //  interval_init();
+  //  window_destroy(top_window);
+  //  break;
   default:
    do {
     window_destroy(top_window);

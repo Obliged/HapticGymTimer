@@ -1,6 +1,5 @@
 #include <pebble.h>
 #include <pebble_fonts.h>
-#define MAIN_FILE
 #include "global.h"
 
 static Window *gym_timer_window;
@@ -9,6 +8,7 @@ static Layer *s_canvas_layer;
 static bool timer_running;
 static AppTimer * AppTimer_countdown;
 static uint16_t stored_gym_timer;
+static uint16_t gym_timer;
 
 static void display_timer_time(void) {
   static char timer_str[6];
@@ -79,7 +79,7 @@ static void click_config_provider(void *context) {
   window_single_click_subscribe(BUTTON_ID_UP, up_click_handler);
   window_single_click_subscribe(BUTTON_ID_DOWN, down_click_handler);
   window_long_click_subscribe(BUTTON_ID_SELECT, LONG_INTERVAL, NULL, select_long_click_release_handler);
-  window_multi_click_subscribe(BUTTON_ID_SELECT, MULTI_INTERVAL, select_multi_click_handler);
+  window_multi_click_subscribe(BUTTON_ID_SELECT, 2, 2, MULTI_INTERVAL, false, select_multi_click_handler);
  }
 
 static void image_update_proc(Layer *layer, GContext *ctx) {
@@ -143,8 +143,8 @@ void gym_timer_init(void) {
   window_set_click_config_provider(gym_timer_window, click_config_provider);
   window_set_background_color(gym_timer_window, PBL_IF_COLOR_ELSE(BGCOLOR, GColorWhite));
   window_set_window_handlers(gym_timer_window, (WindowHandlers) {
-    .load = gym_timer_window_load,
-    .unload = gym_timer_window_unload,
+    .load = window_load,
+    .unload = window_unload,
   });
   const bool animated = true;
   window_stack_push(gym_timer_window, animated);
