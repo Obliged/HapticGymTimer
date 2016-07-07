@@ -13,9 +13,9 @@ uint8_t mode;
 #define CIRCLE_SIZE 120
 
 #define TIMER_INTERVAL 30
-#define REPEATINTERVAL 400;
-#define LONGINTERVAL 700;
-#define MULTIINTERVAL 300;
+#define REPEAT_INTERVAL 400;
+#define LONG_INTERVAL 700;
+#define MULTI_INTERVAL 300;
 
 extern uint16_t gym_timer_seconds;
 extern uint8_t mode;

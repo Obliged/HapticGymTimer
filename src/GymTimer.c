@@ -3,24 +3,12 @@
 #define MAIN_FILE
 #include "global.h"
 
-#define MEM_STORED_GYM_TIMER 0x00000000
-#define MEM_GYM_TIMER 0x00000001
-#define BGCOLOR GColorOrange
-#define FONT FONT_KEY_LECO_36_BOLD_NUMBERS
-#define TIMER_INTERVAL 30
-#define CIRCLE_SIZE 120
-
 static Window *gym_timer_window;
 static TextLayer *text_layer;
 static Layer *s_canvas_layer;
 static bool timer_running;
 static AppTimer * AppTimer_countdown;
 static uint16_t stored_gym_timer;
-
-
-static void uint16_to_time(uint16_t seconds, char* timer_str) {
-  snprintf(timer_str, 6, "%02u:%02u", seconds/60 , seconds%60);
-}
 
 static void display_timer_time(void) {
   static char timer_str[6];
@@ -31,7 +19,7 @@ static void display_timer_time(void) {
 
 static void countdown_callback(void) {
   if (gym_timer) {
-    gym_timer--;
+      gym_timer--;
     //display_timer_time();
     AppTimer_countdown = app_timer_register(1000, (AppTimerCallback) countdown_callback, NULL);
   } else {
@@ -88,9 +76,10 @@ static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
 
 static void click_config_provider(void *context) {
   window_single_click_subscribe(BUTTON_ID_SELECT, select_click_handler);  
-  window_single_click_subscribe(BUTTON_ID_UP,     up_click_handler);
-  window_single_click_subscribe(BUTTON_ID_DOWN,   down_click_handler);
-  window_long_click_subscribe(BUTTON_ID_SELECT, long_interval_ms, NULL, select_long_click_release_handler);
+  window_single_click_subscribe(BUTTON_ID_UP, up_click_handler);
+  window_single_click_subscribe(BUTTON_ID_DOWN, down_click_handler);
+  window_long_click_subscribe(BUTTON_ID_SELECT, LONG_INTERVAL, NULL, select_long_click_release_handler);
+  window_multi_click_subscribe(BUTTON_ID_SELECT, MULTI_INTERVAL, select_multi_click_handler);
  }
 
 static void image_update_proc(Layer *layer, GContext *ctx) {
