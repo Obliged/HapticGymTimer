@@ -19,8 +19,9 @@ static void display_timer_time(void) {
 
 static void countdown_callback(void) {
   if (gym_timer) {
-      gym_timer--;
+    gym_timer--;
     //display_timer_time();
+    layer_mark_dirty(s_canvas_layer);
     AppTimer_countdown = app_timer_register(1000, (AppTimerCallback) countdown_callback, NULL);
   } else {
     vibes_short_pulse();
@@ -38,12 +39,14 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
     timer_running = 0;  
     display_timer_time();
     layer_set_hidden(s_canvas_layer, true);
+    layer_set_hidden((Layer*)text_layer, false);
   }
   //Start
   else {
     timer_running = 1;
     countdown_callback();
     layer_set_hidden(s_canvas_layer, false);
+    layer_set_hidden((Layer*)text_layer, true);
   }
 }
 
@@ -86,7 +89,7 @@ static void image_update_proc(Layer *layer, GContext *ctx) {
   // Place image in the center of the Window
   //GSize img_size = gdraw_command_image_get_bounds_size(s_command_image);
   GRect bounds = layer_get_bounds(layer);
-  GRect cake_bounds = GRect(bounds.size.w/2-CIRCLE_SIZE/2, CIRCLE_SIZE, CIRCLE_SIZE, CIRCLE_SIZE);  
+  GRect cake_bounds = GRect(bounds.size.w/2-CIRCLE_SIZE/2, bounds.size.h/2-CIRCLE_SIZE/2, CIRCLE_SIZE, CIRCLE_SIZE);  
   // Set the line color
   graphics_context_set_stroke_color(ctx, GColorBlack);
   // Set the stroke width (must be an odd integer value)

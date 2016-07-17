@@ -3,6 +3,7 @@
 #include "global.h"
 
 static Window *interval_timer_window;
+static Window *setup_timer_window;
 static TextLayer *run_text_layer;
 static TextLayer *pause_text_layer;
 static TextLayer *setup_text_layer;
@@ -26,7 +27,7 @@ static void display_timer_time(void) {
   }
 }
 
-static void countdown_callback(void) {
+static void countdown_callback(ActionMenu *action_menu, const ActionMenuItem *action, void *context) {
   if (curr_timer) {
     curr_timer--;
   } else {
@@ -44,7 +45,7 @@ static void countdown_callback(void) {
       text_layer_set_text(pause_text_layer, timer_str);      
     }
   }
-  AppTimer_countdown = app_timer_register(1000, (AppTimerCallback) countdown_callback, NULL);
+  //AppTimer_countdown = app_timer_register(1000, (AppTimerCallback) countdown_callback, NULL);
   display_timer_time();  
 }
 
@@ -59,7 +60,7 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
   //Start
   else {
     timer_running = 1;
-    countdown_callback();
+    //countdown_callback();
     layer_set_hidden(s_canvas_layer, false);
   }
 }
@@ -101,11 +102,19 @@ static void click_config_provider(void *context) {
   window_multi_click_subscribe(BUTTON_ID_SELECT, 2, 2, MULTI_INTERVAL, false, select_multi_click_handler);
  }
 
+static void setup_click_config_provider(void *context) {
+  //window_single_click_subscribe(BUTTON_ID_SELECT, select_click_handler);  
+  window_single_click_subscribe(BUTTON_ID_UP, up_click_handler);
+  window_single_click_subscribe(BUTTON_ID_DOWN, down_click_handler);
+  //window_long_click_subscribe(BUTTON_ID_SELECT, LONG_INTERVAL, NULL, select_long_click_release_handler);
+  //window_multi_click_subscribe(BUTTON_ID_SELECT, 2, 2, MULTI_INTERVAL, false, select_multi_click_handler);
+ }
+
 static void image_update_proc(Layer *layer, GContext *ctx) {
   // Place image in the center of the Window
   //GSize img_size = gdraw_command_image_get_bounds_size(s_command_image);
   GRect bounds = layer_get_bounds(layer);
-  GRect cake_bounds = GRect(bounds.size.w/2-CIRCLE_SIZE/2, CIRCLE_SIZE, CIRCLE_SIZE, CIRCLE_SIZE);  
+  GRect cake_bounds = GRect(bounds.size.w/2-CIRCLE_SIZE/2, bounds.size.h/2-CIRCLE_SIZE/2, CIRCLE_SIZE, CIRCLE_SIZE);  
   // Set the line color
   graphics_context_set_stroke_color(ctx, GColorBlack);
   // Set the stroke width (must be an odd integer value)
@@ -180,7 +189,7 @@ static void setup_window_unload(Window *window) {
 }
 
 
-static void setup_timer(uint16_t* stored_timer) {
+static void setup_timer(ActionMenu *action_menu, const ActionMenuItem *action, void *context) {
   setup_timer_window = window_create();
   window_set_click_config_provider(setup_timer_window, setup_click_config_provider);
   window_set_background_color(setup_timer_window, PBL_IF_COLOR_ELSE(BGCOLOR, GColorWhite));
@@ -214,10 +223,11 @@ void interval_timer_init(void) {
 
   interval_menu = action_menu_level_create(3);
   action_menu_level_set_display_mode(interval_menu, ActionMenuLevelDisplayModeWide);
-  ActionMenuItem* start_item = action_menu_level_add_action(interval_menu, "Start" , start_interval_timer, NULL);
-  ActionMenuItem* run_item = action_menu_level_add_action(interval_menu, "Interval time" , setup_timer, &stored_run_timer);
-  ActionMenuItem* pause_item = action_menu_level_add_action(interval_menu, "Pause time" , setup_timer, &stored_pause_timer);
+  ActionMenuItem* start_item = action_menu_level_add_action(interval_menu, "Start" , countdown_callback, NULL);
+  ActionMenuItem* run_item = action_menu_level_add_action(interval_menu, "Interval time" , setup_timer, NULL/*, stored_run_timer*/);
+  ActionMenuItem* pause_item = action_menu_level_add_action(interval_menu, "Pause time" , setup_timer, NULL/*, stored_pause_timer*/);
 }
+
 
 void interval_timer_deinit(void) {
   window_destroy(interval_timer_window);
