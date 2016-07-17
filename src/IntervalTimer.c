@@ -13,7 +13,7 @@ static AppTimer * AppTimer_countdown;
 static uint16_t stored_run_timer;
 static uint16_t stored_pause_timer;
 static uint16_t curr_timer;
-static bool running;
+static bool pause;
 
 static void display_timer_time(void) {
   char timer_str[6];
@@ -37,11 +37,11 @@ static void countdown_callback(void) {
     if ( pause ) {
       curr_timer = stored_pause_timer;
       uint16_to_time(stored_run_timer, timer_str);
-      text_layer_set_texy(run_text_layer, timer_str);
+      text_layer_set_text(run_text_layer, timer_str);
     } else {
       curr_timer = stored_run_timer;
       uint16_to_time(stored_pause_timer, timer_str);
-      text_layer_set_texy(pause_text_layer, timer_str);      
+      text_layer_set_text(pause_text_layer, timer_str);      
     }
   }
   AppTimer_countdown = app_timer_register(1000, (AppTimerCallback) countdown_callback, NULL);
@@ -155,9 +155,9 @@ static void window_unload(Window *window) {
   text_layer_destroy(pause_text_layer);
   layer_destroy(s_canvas_layer);
 
-  (void) persist_write_int(MEM_STORED_RUN_TIMER, (uint32_t)stored_gym_timer);
+  (void) persist_write_int(MEM_STORED_RUN_TIMER, (uint32_t)stored_run_timer);
   (void) persist_write_int(MEM_STORED_PAUSE_TIMER, (uint32_t)stored_pause_timer);  
-  (void) persist_write_int(MEM_STORED_CURR_TIMER, (uint32_t)stored_curr_timer);
+  (void) persist_write_int(MEM_CURR_TIMER, (uint32_t)curr_timer);
   (void) persist_write_bool(MEM_PAUSE, pause);
 }
 
@@ -176,7 +176,19 @@ static void setup_window_load(Window *window) {
   }
 
 static void setup_window_unload(Window *window) {
-  text_layer_destroy(setp_text_layer);
+  text_layer_destroy(setup_text_layer);
+}
+
+
+static void setup_timer(uint16_t* stored_timer) {
+  setup_timer_window = window_create();
+  window_set_click_config_provider(setup_timer_window, setup_click_config_provider);
+  window_set_background_color(setup_timer_window, PBL_IF_COLOR_ELSE(BGCOLOR, GColorWhite));
+  window_set_window_handlers(setup_timer_window, (WindowHandlers) {
+    .load = setup_window_load,
+    .unload = setup_window_unload,
+  });
+  window_stack_push(setup_timer_window, false);
 }
 
 void interval_timer_init(void) {
@@ -202,20 +214,9 @@ void interval_timer_init(void) {
 
   interval_menu = action_menu_level_create(3);
   action_menu_level_set_display_mode(interval_menu, ActionMenuLevelDisplayModeWide);
-  start_item = action_menu_level_add_action(interval_menu, "Start" , start_interval_timer, NULL);
-  run_item = action_menu_level_add_action(interval_menu, "Interval time" , setup_timer, &stored_run_timer);
-  pause_item = action_menu_level_add_action(interval_menu, "Pause time" , setup_timer, &stored_pause_timer);
-}
-
-static void setup_timer(uint16_t* stored_timer) {
-  setup_timer_window = window_create();
-  window_set_click_config_provider(setup_timer_window, setup_click_config_provider);
-  window_set_background_color(setup_timer_window, PBL_IF_COLOR_ELSE(BGCOLOR, GColorWhite));
-  window_set_window_handlers(setup_timer_window, (WindowHandlers) {
-    .load = setup_window_load,
-    .unload = setup_window_unload,
-  });
-  window_stack_push(setup_timer_window, false);
+  ActionMenuItem* start_item = action_menu_level_add_action(interval_menu, "Start" , start_interval_timer, NULL);
+  ActionMenuItem* run_item = action_menu_level_add_action(interval_menu, "Interval time" , setup_timer, &stored_run_timer);
+  ActionMenuItem* pause_item = action_menu_level_add_action(interval_menu, "Pause time" , setup_timer, &stored_pause_timer);
 }
 
 void interval_timer_deinit(void) {
