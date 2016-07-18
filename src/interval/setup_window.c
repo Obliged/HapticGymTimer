@@ -27,14 +27,14 @@ static void click_config_provider(void *context) {
   window_single_click_subscribe(BUTTON_ID_DOWN, down_click_handler);
 }
 
-void window_load(){
+static void window_load(Window* window){
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
   
   //Run text
   s_text_layer = text_layer_create(GRect(0, bounds.size.h/2-TEXT_LAYER_H/2, bounds.size.w, TEXT_LAYER_H));
-  text_layer_set_background_color(s_text_layer, PBL_IF_COLOR_ELSE(BGCOLOR, GColorBlack));
-  text_layer_set_text_color(s_text_layer, PBL_IF_COLOR_ELSE(GColorWhite, GColorWhite));
+  text_layer_set_background_color(s_text_layer, PBL_IF_COLOR_ELSE(BGCOLOR, BWBGCOLOR));
+  text_layer_set_text_color(s_text_layer, PBL_IF_COLOR_ELSE(FGCOLOR, BWFGCOLOR));
   text_layer_set_font(s_text_layer, fonts_get_system_font(FONT));
   text_layer_set_text_alignment(s_text_layer, GTextAlignmentCenter);
   display_timer_time();
@@ -50,6 +50,8 @@ void interval_setup_window_push(uint16_t* stored_timer, bool run_setup){
   local_timer = stored_timer;
   if(!s_main_window) {
     s_main_window = window_create();
+    window_set_click_config_provider(s_main_window, click_config_provider);
+    window_set_background_color(s_main_window, PBL_IF_COLOR_ELSE(BGCOLOR, BWBGCOLOR));
     window_set_window_handlers(s_main_window, (WindowHandlers) {
         .load = window_load,
         .unload = window_unload,

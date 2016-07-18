@@ -1,5 +1,4 @@
 #include <pebble.h>
-#include "interval_timer.h"
 #include "setup_window.h"
 #include "run_window.h"
 
@@ -9,8 +8,6 @@ static Window *s_interval_menu_window;
 static MenuLayer *s_menu_layer;
 static uint16_t stored_run_timer;
 static uint16_t stored_pause_timer;
-static uint16_t curr_timer; //FIXME move to run
-static bool pause; //FIXME move to run
 
 static uint16_t get_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *context) {
   return NUM_WINDOWS;
@@ -36,7 +33,7 @@ static int16_t get_cell_height_callback(struct MenuLayer *menu_layer, MenuIndex 
   return PBL_IF_ROUND_ELSE(
     menu_layer_is_index_selected(menu_layer, cell_index) ?
       MENU_CELL_ROUND_FOCUSED_SHORT_CELL_HEIGHT : MENU_CELL_ROUND_UNFOCUSED_TALL_CELL_HEIGHT,
-    CHECKBOX_WINDOW_CELL_HEIGHT);
+    MENU_CELL_HEIGHT);
 }
 
 static void select_callback(struct MenuLayer *menu_layer, MenuIndex *cell_index, void *context) {
@@ -78,18 +75,14 @@ static void window_unload(Window *window) {
   menu_layer_destroy(s_menu_layer);
 }
 
-static void interval_timer_init() {
-    //Load previous counter
+void interval_timer_init(void) {
+  //Load previous counter
   stored_run_timer = (uint16_t) persist_read_int(MEM_STORED_RUN_TIMER);
   stored_pause_timer = (uint16_t) persist_read_int(MEM_STORED_PAUSE_TIMER);
-  curr_timer = (uint16_t) persist_read_int(MEM_CURR_TIMER); //FIXME move to run
-  pause = (bool) persist_read_bool(MEM_PAUSE); //FIXME move to run
   //Initialize if no value stored
-  if (stored_run_timer == 0) stored_run_timer = 120;
+  if (stored_run_timer == 0) stored_run_timer = 240;
   if (stored_pause_timer == 0) stored_pause_timer = 120;
-  if (curr_timer == 0) curr_timer = pause ? stored_pause_timer : stored_run_timer;
-  timer_running = 0;
-  
+
   s_interval_menu_window = window_create();
   //window_set_click_config_provider(s_interval_menu_window, click_config_provider);
   window_set_background_color(s_interval_menu_window, PBL_IF_COLOR_ELSE(BGCOLOR, GColorWhite));
@@ -98,8 +91,4 @@ static void interval_timer_init() {
     .unload = window_unload,
   });
   window_stack_push(s_interval_menu_window, true);
-}
-
-static void interval_timer_deinit() {
-  window_destroy(s_interval_menu_window);
 }

@@ -100,7 +100,7 @@ static void image_update_proc(Layer *layer, GContext *ctx) {
   uint16_t inset_thickness = CIRCLE_SIZE/2;
   int32_t angle_start = DEG_TO_TRIGANGLE(360-360*gym_timer/stored_gym_timer);
   int32_t angle_end = DEG_TO_TRIGANGLE(360);
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Angle end: %d", (int)angle_end);
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "Angle start: %d", (int)angle_start);
   // Fill a radial section of a circle
   graphics_fill_radial(ctx, cake_bounds, GOvalScaleModeFitCircle, inset_thickness, angle_start, angle_end);
 }
@@ -110,7 +110,7 @@ static void window_load(Window *window) {
   GRect bounds = layer_get_bounds(window_layer);
   
   //Clock
-  text_layer = text_layer_create(GRect(0, bounds.size.h/2-TEXT_LAYER_H/2/*+45*/, bounds.size.w, TEXT_LAYER_H));
+  text_layer = text_layer_create(GRect(0, bounds.size.h/2-TEXT_LAYER_H/2, bounds.size.w, TEXT_LAYER_H));
   text_layer_set_background_color(text_layer, PBL_IF_COLOR_ELSE(BGCOLOR, GColorBlack));
   text_layer_set_text_color(text_layer, PBL_IF_COLOR_ELSE(FGCOLOR, BWFGCOLOR));
   text_layer_set_font(text_layer, fonts_get_system_font(FONT));

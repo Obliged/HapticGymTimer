@@ -17,11 +17,11 @@ void select_multi_click_handler(ClickRecognizerRef recognizer, void *context) {
  switch (mode) { 
   case 0 : 
     gym_timer_init(); 
-    window_destroy(top_window);
+    //window_destroy(top_window);
     break;
    case 1: 
     interval_timer_init(); 
-    window_destroy(top_window);
+    //window_destroy(top_window);
     break;
   default: //Something went wrong, clean up and restart.
     do {
