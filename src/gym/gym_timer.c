@@ -95,7 +95,7 @@ static void image_update_proc(Layer *layer, GContext *ctx) {
   // Set the stroke width (must be an odd integer value)
   graphics_context_set_stroke_width(ctx, 5);
   // Set the fill color
-  graphics_context_set_fill_color(ctx, GColorWhite);
+  graphics_context_set_fill_color(ctx, FGCOLOR);
   
   uint16_t inset_thickness = CIRCLE_SIZE/2;
   int32_t angle_start = DEG_TO_TRIGANGLE(360-360*gym_timer/stored_gym_timer);
@@ -110,10 +110,10 @@ static void window_load(Window *window) {
   GRect bounds = layer_get_bounds(window_layer);
   
   //Clock
-  text_layer = text_layer_create(GRect(0, bounds.size.h/2-46/2/*+45*/, bounds.size.w, 46));
+  text_layer = text_layer_create(GRect(0, bounds.size.h/2-TEXT_LAYER_H/2/*+45*/, bounds.size.w, TEXT_LAYER_H));
   text_layer_set_background_color(text_layer, PBL_IF_COLOR_ELSE(BGCOLOR, GColorBlack));
-  text_layer_set_text_color(text_layer, PBL_IF_COLOR_ELSE(GColorWhite, GColorWhite));
-  text_layer_set_font(text_layer, fonts_get_system_font(FONT_KEY_LECO_36_BOLD_NUMBERS));
+  text_layer_set_text_color(text_layer, PBL_IF_COLOR_ELSE(FGCOLOR, BWFGCOLOR));
+  text_layer_set_font(text_layer, fonts_get_system_font(FONT));
   text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
   display_timer_time();
   layer_add_child(window_layer, text_layer_get_layer(text_layer));
@@ -126,11 +126,12 @@ static void window_load(Window *window) {
 }
 
 static void window_unload(Window *window) {
-  text_layer_destroy(text_layer);
-  layer_destroy(s_canvas_layer);
+  //text_layer_destroy(text_layer);
+  //layer_destroy(s_canvas_layer);
 
   (void) persist_write_int(MEM_STORED_GYM_TIMER, (uint32_t)stored_gym_timer);
   (void) persist_write_int(MEM_GYM_TIMER, (uint32_t)gym_timer);  
+  window_destroy(gym_timer_window);
 }
 
 void gym_timer_init(void) {
@@ -144,7 +145,7 @@ void gym_timer_init(void) {
   
   gym_timer_window = window_create();
   window_set_click_config_provider(gym_timer_window, click_config_provider);
-  window_set_background_color(gym_timer_window, PBL_IF_COLOR_ELSE(BGCOLOR, GColorWhite));
+  window_set_background_color(gym_timer_window, PBL_IF_COLOR_ELSE(BGCOLOR, BWBGCOLOR));
   window_set_window_handlers(gym_timer_window, (WindowHandlers) {
     .load = window_load,
     .unload = window_unload,
@@ -153,6 +154,3 @@ void gym_timer_init(void) {
   window_stack_push(gym_timer_window, animated);
 }
 
-void gym_timer_deinit(void) {
-  window_destroy(gym_timer_window);
-}

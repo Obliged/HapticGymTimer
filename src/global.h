@@ -14,11 +14,15 @@
   #define MEM_GYM_TIMER 0x00000001
   #define MEM_STORED_RUN_TIMER 0x00000002
   #define MEM_STORED_PAUSE_TIMER 0x00000003
-  #define MEM_CURR_TIMER 0x00000004
+  #define MEM_CURR_INTERVAL 0x00000004
   #define MEM_PAUSE 0x00000005
 
   #define BGCOLOR GColorOrange
+  #define FGCOLOR GColorWhite
+  #define BWBGCOLOR GColorBlack
+  #define BWFGCOLOR GColorWhite  
   #define FONT FONT_KEY_LECO_36_BOLD_NUMBERS
+  #define TEXT_LAYER_H 46
   #define CIRCLE_SIZE 120
 
   #define TIMER_INTERVAL 30
