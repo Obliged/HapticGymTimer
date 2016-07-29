@@ -6,7 +6,7 @@ static Window *gym_timer_window;
 static TextLayer *text_layer;
 static Layer *s_canvas_layer;
 static bool timer_running;
-static AppTimer * AppTimer_countdown;
+static AppTimer *AppTimer_countdown;
 static uint16_t stored_gym_timer;
 static uint16_t gym_timer;
 
@@ -20,7 +20,6 @@ static void display_timer_time(void) {
 static void countdown_callback(void) {
   if (gym_timer) {
     gym_timer--;
-    //display_timer_time();
     layer_mark_dirty(s_canvas_layer);
     AppTimer_countdown = app_timer_register(1000, (AppTimerCallback) countdown_callback, NULL);
   } else {
@@ -95,7 +94,7 @@ static void image_update_proc(Layer *layer, GContext *ctx) {
   // Set the stroke width (must be an odd integer value)
   graphics_context_set_stroke_width(ctx, 5);
   // Set the fill color
-  graphics_context_set_fill_color(ctx, FGCOLOR);
+  graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(FGCOLOR, BWFGCOLOR));
   
   uint16_t inset_thickness = CIRCLE_SIZE/2;
   int32_t angle_start = DEG_TO_TRIGANGLE(360-360*gym_timer/stored_gym_timer);
@@ -111,7 +110,7 @@ static void window_load(Window *window) {
   
   //Clock
   text_layer = text_layer_create(GRect(0, bounds.size.h/2-TEXT_LAYER_H/2, bounds.size.w, TEXT_LAYER_H));
-  text_layer_set_background_color(text_layer, PBL_IF_COLOR_ELSE(BGCOLOR, GColorBlack));
+  text_layer_set_background_color(text_layer, PBL_IF_COLOR_ELSE(BGCOLOR, BWBGCOLOR));
   text_layer_set_text_color(text_layer, PBL_IF_COLOR_ELSE(FGCOLOR, BWFGCOLOR));
   text_layer_set_font(text_layer, fonts_get_system_font(FONT));
   text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
@@ -126,12 +125,13 @@ static void window_load(Window *window) {
 }
 
 static void window_unload(Window *window) {
-  //text_layer_destroy(text_layer);
-  //layer_destroy(s_canvas_layer);
-
+  if(timer_running) app_timer_cancel(AppTimer_countdown);
+  text_layer_destroy(text_layer);
+  layer_destroy(s_canvas_layer);
+  
   (void) persist_write_int(MEM_STORED_GYM_TIMER, (uint32_t)stored_gym_timer);
   (void) persist_write_int(MEM_GYM_TIMER, (uint32_t)gym_timer);  
-  window_destroy(gym_timer_window);
+  window_destroy(window);
 }
 
 void gym_timer_init(void) {

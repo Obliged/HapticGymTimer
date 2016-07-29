@@ -16,18 +16,15 @@ void select_multi_click_handler(ClickRecognizerRef recognizer, void *context) {
   Window* top_window = window_stack_get_top_window();
  switch (mode) { 
   case 0 : 
+    window_stack_pop(true);  
     gym_timer_init(); 
-    //window_destroy(top_window);
     break;
    case 1: 
+    window_stack_pop(true);      
     interval_timer_init(); 
-    //window_destroy(top_window);
     break;
   default: //Something went wrong, clean up and restart.
-    do {
-      window_destroy(top_window);
-      top_window = window_stack_get_top_window();
-    }while (top_window != NULL);
+    window_stack_pop_all(false);
     mode = 0;
     gym_timer_init();
   }
@@ -41,7 +38,7 @@ static void init(void) {
 static void deinit(void) {
   Window* top_window = window_stack_get_top_window();
   do {
-    window_destroy(top_window);
+    window_stack_pop(top_window);
     top_window = window_stack_get_top_window();
    } while (top_window != NULL);
 }

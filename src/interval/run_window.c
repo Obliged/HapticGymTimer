@@ -4,7 +4,12 @@ static Window* s_main_window;
 static TextLayer* s_run_layer;
 static TextLayer* s_pause_layer;
 static Layer* s_canvas_layer;
+static GDrawCommandList* s_fg_runman_list;
+static Layer* s_bg_run_canvas;
+static Layer* s_fg_run_canvas;
 static AppTimer * AppTimer_countdown;
+static char run_timer_str[6];
+static char pause_timer_str[6];
 static uint16_t local_run_timer;
 static uint16_t local_pause_timer;
 static uint16_t curr_timer;
@@ -12,13 +17,14 @@ static bool timer_running;
 static bool pause;
 
 static void display_timer_time(void) {
-  char timer_str[6];
-  uint16_to_time(curr_timer, timer_str);
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Seconds_str now: %s", timer_str);
   if( pause ) {
-    text_layer_set_text(s_pause_layer, timer_str);
+    uint16_to_time(curr_timer, pause_timer_str);
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "pause_timer_str now: %s", pause_timer_str);
+    text_layer_set_text(s_pause_layer, pause_timer_str);
   } else {
-    text_layer_set_text(s_run_layer, timer_str);    
+    uint16_to_time(curr_timer, run_timer_str);
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "run_timer_str now: %s", run_timer_str);    
+    text_layer_set_text(s_run_layer, run_timer_str);    
   }
 }
 
@@ -42,24 +48,32 @@ static void image_update_proc(Layer *layer, GContext *ctx) {
   graphics_fill_radial(ctx, cake_bounds, GOvalScaleModeFitCircle, inset_thickness, angle_start, angle_end);
 }
 
+static void runman_update_proc(Layer *layer, GContext *ctx) {
+  // Place image in the center of the Window
+  //GSize img_size = gdraw_command_image_get_bounds_size(s_command_image);
+  gdraw_command_list_draw(ctx, s_fg_runman_list);
+  //gdraw_command_image_draw(ctx, s_command_image, (GPoint){30,30});
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Running man drawn");    
+}
+
 static void countdown_callback(void) {
   if (curr_timer) {
     curr_timer--;
   } else {
     vibes_short_pulse();
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Vibrating!");
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "Vibrating!");
     pause = !pause;
-    char timer_str[6];
     if ( pause ) {
       curr_timer = local_pause_timer;
-      uint16_to_time(local_run_timer, timer_str);
-      text_layer_set_text(s_run_layer, timer_str);
+      uint16_to_time(local_run_timer, run_timer_str);
+      text_layer_set_text(s_run_layer, run_timer_str);
     } else {
       curr_timer = local_run_timer;
-      uint16_to_time(local_pause_timer, timer_str);
-      text_layer_set_text(s_pause_layer, timer_str);      
+      uint16_to_time(local_pause_timer, pause_timer_str);
+      text_layer_set_text(s_pause_layer, pause_timer_str);      
     }
   }
+  layer_mark_dirty(s_canvas_layer);
   AppTimer_countdown = app_timer_register(1000, (AppTimerCallback) countdown_callback, NULL);
 }
 
@@ -68,7 +82,7 @@ static void select_long_click_release_handler(ClickRecognizerRef recognizer, voi
     app_timer_cancel(AppTimer_countdown);
     timer_running = 0;
   }
-  curr_timer = pause ? local_pause_timer : local_run_timer;
+  curr_timer = local_run_timer;
   display_timer_time();
 }
 
@@ -81,6 +95,8 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
     layer_set_hidden((Layer*)s_pause_layer,false);
     layer_set_hidden((Layer*)s_run_layer,false);
     layer_set_hidden(s_canvas_layer, true);
+    //layer_set_hidden(s_fg_run_canvas, true);
+    layer_set_hidden(s_bg_run_canvas, true);
   }
   //Start
   else {
@@ -89,12 +105,22 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
     layer_set_hidden((Layer*)s_pause_layer,true);
     layer_set_hidden((Layer*)s_run_layer,true);
     layer_set_hidden(s_canvas_layer, false);
+    //layer_set_hidden(s_fg_run_canvas, false);
+    layer_set_hidden(s_bg_run_canvas, false);
+    //layer_mark_dirty(s_fg_run_canvas);
+    //layer_mark_dirty(s_bg_run_canvas);
   }
 }
 
 static void click_config_provider(void *context) {
   window_single_click_subscribe(BUTTON_ID_SELECT, select_click_handler);
   window_long_click_subscribe(BUTTON_ID_SELECT, LONG_INTERVAL, NULL, select_long_click_release_handler);
+  window_multi_click_subscribe(BUTTON_ID_SELECT, 2, 2, MULTI_INTERVAL, false, select_multi_click_handler);
+}
+
+static bool set_color_cb (GDrawCommand *command, uint32_t index, void *context) {
+  gdraw_command_set_fill_color(command, GColorBlack);
+  return true;
 }
 
 static void window_load(Window* window){
@@ -102,23 +128,42 @@ static void window_load(Window* window){
   GRect bounds = layer_get_bounds(window_layer);
   
   //Run text
-  s_run_layer = text_layer_create(GRect(0, bounds.size.h/2-TEXT_LAYER_H/2-TEXT_LAYER_H, bounds.size.w, TEXT_LAYER_H));
-  text_layer_set_background_color(s_run_layer, PBL_IF_COLOR_ELSE(GColorBlack, BWBGCOLOR));
+  s_run_layer = text_layer_create(GRect(0, bounds.size.h/2-TEXT_LAYER_H/2-TEXT_LAYER_H/2-10, bounds.size.w, TEXT_LAYER_H));
+  text_layer_set_background_color(s_run_layer, PBL_IF_COLOR_ELSE(BGCOLOR, BWBGCOLOR));
   text_layer_set_text_color(s_run_layer, PBL_IF_COLOR_ELSE(FGCOLOR, BWFGCOLOR));
   text_layer_set_font(s_run_layer, fonts_get_system_font(FONT));
   text_layer_set_text_alignment(s_run_layer, GTextAlignmentCenter);
-  display_timer_time();
+  uint16_to_time(local_run_timer, run_timer_str);
+  text_layer_set_text(s_run_layer, run_timer_str);
+
   layer_add_child(window_layer, text_layer_get_layer(s_run_layer));
 
   //Pause text
-  s_pause_layer = text_layer_create(GRect(0, bounds.size.h/2-TEXT_LAYER_H/2+TEXT_LAYER_H, bounds.size.w, TEXT_LAYER_H));
+  s_pause_layer = text_layer_create(GRect(0, bounds.size.h/2-TEXT_LAYER_H/2+TEXT_LAYER_H/2+10, bounds.size.w, TEXT_LAYER_H));
   text_layer_set_background_color(s_pause_layer, PBL_IF_COLOR_ELSE(BGCOLOR, BWBGCOLOR));
   text_layer_set_text_color(s_pause_layer, PBL_IF_COLOR_ELSE(FGCOLOR, BWFGCOLOR));
   text_layer_set_font(s_pause_layer, fonts_get_system_font(FONT));
   text_layer_set_text_alignment(s_pause_layer, GTextAlignmentCenter);
-  display_timer_time();
+  uint16_to_time(local_pause_timer, pause_timer_str);
+  text_layer_set_text(s_pause_layer, pause_timer_str);
+
   layer_add_child(window_layer, text_layer_get_layer(s_pause_layer));
 
+    //Create command_image
+  GDrawCommandImage *command_image = gdraw_command_image_create_with_resource(RESOURCE_ID_RUNNING_MAN);
+  s_fg_runman_list = gdraw_command_image_get_command_list(command_image);
+  //s_bg_runman_list = gdraw_command_image_get_command_list(command_image);
+  gdraw_command_list_iterate(s_fg_runman_list, set_color_cb, NULL);
+  //Create two canvases for two instances of image
+  s_bg_run_canvas = layer_create(GRect(bounds.size.w/2-100/2, bounds.size.h/2-73/2, 102, 73)); //TODO GSize gdraw_command_image_get_bounds_size(GDrawCommandImage * image)
+  layer_set_update_proc(s_bg_run_canvas, runman_update_proc);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Adding Running man bg");     
+  layer_add_child(window_layer, s_bg_run_canvas);
+  //s_fg_run_canvas = layer_create(GRect(bounds.size.w/2-60/2, bounds.size.h/2-43/2, 60, 43));
+  //layer_set_update_proc(s_fg_run_canvas, runman_update_proc);
+  //  APP_LOG(APP_LOG_LEVEL_DEBUG, "Adding Running man fg");     
+  //layer_add_child(window_layer, s_fg_run_canvas);
+  
   // Create canvas Layer and set up the update procedure
   s_canvas_layer = layer_create(bounds);
   layer_set_update_proc(s_canvas_layer, image_update_proc);
@@ -127,9 +172,14 @@ static void window_load(Window* window){
 }
 
 static void window_unload(Window *window) {
-  (void) persist_write_int(MEM_CURR_INTERVAL, (uint32_t)curr_timer);
-  (void) persist_write_bool(MEM_PAUSE, pause);
-
+  if(timer_running) app_timer_cancel(AppTimer_countdown);
+  layer_destroy(s_canvas_layer);
+  text_layer_destroy(s_run_layer);
+  text_layer_destroy(s_pause_layer);
+  layer_destroy(s_bg_run_canvas);
+  layer_destroy(s_fg_run_canvas);
+  //gdraw_command_list_destroy(s_fg_runman_list);
+  //gdraw_command_list_destroy(s_bg_runman_list);
   window_destroy(window);
   s_main_window = NULL;
 }
@@ -137,12 +187,8 @@ static void window_unload(Window *window) {
 void interval_run_window_push(uint16_t* stored_run_timer, uint16_t* stored_pause_timer){
   local_run_timer = *stored_run_timer;
   local_pause_timer = *stored_pause_timer;
-  curr_timer = (uint16_t) persist_read_int(MEM_CURR_INTERVAL);
-  pause = persist_read_bool(MEM_PAUSE);
-  if (curr_timer == 0) {
-    pause = 0;
-    curr_timer = *stored_run_timer;
-  }
+  curr_timer = local_run_timer;
+  pause = 0;
   timer_running = 0;
     
   if(!s_main_window) {

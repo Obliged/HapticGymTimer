@@ -19,12 +19,12 @@
 
   #define BGCOLOR GColorOrange
   #define FGCOLOR GColorWhite
-  #define BWBGCOLOR GColorBlack
-  #define BWFGCOLOR GColorWhite  
+  #define BWBGCOLOR GColorWhite
+  #define BWFGCOLOR GColorBlack  
   #define FONT FONT_KEY_LECO_36_BOLD_NUMBERS
   #define TEXT_LAYER_H 46
   #define CIRCLE_SIZE 120
-  #define MENU_CELL_HEIGHT 46
+  #define MENU_CELL_HEIGHT 50
 
   #define TIMER_INTERVAL 30
   #define REPEAT_INTERVAL 400
