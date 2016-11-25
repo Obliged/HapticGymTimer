@@ -2,12 +2,9 @@
     "author": "hs.solvang@gmail.com",
     "dependencies": {},
     "keywords": [],
-    "name": "hapticgymtimer",
+    "name": "gymtimer",
     "pebble": {
-        "capabilities": [
-            ""
-        ],
-        "displayName": "HapticGymTimer",
+        "displayName": "GymTimer",
         "enableMultiJS": true,
         "messageKeys": [],
         "projectType": "native",
@@ -15,6 +12,7 @@
             "media": [
                 {
                     "file": "data/running_man.pdc",
+                    "menuIcon": true,
                     "name": "RUNNING_MAN",
                     "targetPlatforms": null,
                     "type": "raw"

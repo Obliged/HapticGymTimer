@@ -1,7 +1,7 @@
 #include <pebble.h>
 #include <pebble_fonts.h>
 #define MAIN_FILE
-#include "global.h" 
+#include "global_def.h" 
 #include "window_control.h"
 
 void uint16_to_time(uint16_t seconds, char* timer_str) {
