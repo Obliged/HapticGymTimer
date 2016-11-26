@@ -2,7 +2,7 @@
 
 #include <pebble.h>
 #include <pebble_fonts.h>
-#include "global.h"
+#include "../global.h"
 
 #define RUN_SETUP 1
 #define PAUSE_SETUP 0

@@ -1,6 +1,6 @@
 #include <pebble.h>
 #include <pebble_fonts.h>
-#include "global.h"
+#include "../global.h"
 
 static Window *gym_timer_window;
 static TextLayer *text_layer;
