@@ -95,7 +95,7 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
     layer_set_hidden((Layer*)s_pause_layer,false);
     layer_set_hidden((Layer*)s_run_layer,false);
     layer_set_hidden(s_canvas_layer, true);
-    //layer_set_hidden(s_fg_run_canvas, true);
+    layer_set_hidden(s_fg_run_canvas, true);
     layer_set_hidden(s_bg_run_canvas, true);
   }
   //Start
@@ -105,7 +105,7 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
     layer_set_hidden((Layer*)s_pause_layer,true);
     layer_set_hidden((Layer*)s_run_layer,true);
     layer_set_hidden(s_canvas_layer, false);
-    //layer_set_hidden(s_fg_run_canvas, false);
+    layer_set_hidden(s_fg_run_canvas, false);
     layer_set_hidden(s_bg_run_canvas, false);
     //layer_mark_dirty(s_fg_run_canvas);
     //layer_mark_dirty(s_bg_run_canvas);
@@ -154,21 +154,25 @@ static void window_load(Window* window){
   s_fg_runman_list = gdraw_command_image_get_command_list(command_image);
   //s_bg_runman_list = gdraw_command_image_get_command_list(command_image);
   gdraw_command_list_iterate(s_fg_runman_list, set_color_cb, NULL);
-  //Create two canvases for two instances of image
+  //Background image
   s_bg_run_canvas = layer_create(GRect(bounds.size.w/2-100/2, bounds.size.h/2-73/2, 102, 73)); //TODO GSize gdraw_command_image_get_bounds_size(GDrawCommandImage * image)
   layer_set_update_proc(s_bg_run_canvas, runman_update_proc);
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Adding Running man bg");     
+  layer_set_hidden(s_bg_run_canvas, true);
   layer_add_child(window_layer, s_bg_run_canvas);
-  //s_fg_run_canvas = layer_create(GRect(bounds.size.w/2-60/2, bounds.size.h/2-43/2, 60, 43));
-  //layer_set_update_proc(s_fg_run_canvas, runman_update_proc);
-  //  APP_LOG(APP_LOG_LEVEL_DEBUG, "Adding Running man fg");     
-  //layer_add_child(window_layer, s_fg_run_canvas);
   
   // Create canvas Layer and set up the update procedure
   s_canvas_layer = layer_create(bounds);
   layer_set_update_proc(s_canvas_layer, image_update_proc);
   layer_set_hidden(s_canvas_layer, true);
   layer_add_child(window_layer, s_canvas_layer);
+  //Foreground image
+  s_fg_run_canvas = layer_create(GRect(bounds.size.w/2-60/2, bounds.size.h/2-43/2, 60, 43));
+  layer_set_update_proc(s_fg_run_canvas, runman_update_proc);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Adding Running man fg");     
+  layer_set_hidden(s_fg_run_canvas, true);
+  layer_add_child(window_layer, s_fg_run_canvas);
+  
 }
 
 static void window_unload(Window *window) {
