@@ -12,7 +12,7 @@
             "media": [
                 {
                     "file": "data/running_man.pdc",
-                    "menuIcon": true,
+                    "menuIcon": false,
                     "name": "RUNNING_MAN",
                     "targetPlatforms": null,
                     "type": "raw"
@@ -24,7 +24,8 @@
             "aplite",
             "basalt",
             "chalk",
-            "diorite"
+            "diorite",
+            "emery"
         ],
         "uuid": "2d9c10f6-922a-4f3b-93db-737eae0c8883",
         "watchapp": {
